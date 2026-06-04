@@ -86,13 +86,16 @@ async function saveStore() {
 // 初始化 MongoDB
 async function initMongoDB() {
   try {
+    console.log('Attempting to connect to MongoDB...');
     const { MongoClient } = require('mongodb');
-    mongoClient = new MongoClient(process.env.MONGODB_URI);
+    mongoClient = new MongoClient(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000
+    });
     await mongoClient.connect();
     db = mongoClient.db();
     console.log('Connected to MongoDB');
     
-    // 检查并初始化集合
     const collections = await db.listCollections().toArray();
     const collectionNames = collections.map(c => c.name);
     
@@ -131,7 +134,17 @@ async function initMongoDB() {
     };
   } catch (err) {
     console.error('MongoDB init error:', err.message);
-    throw err;
+    console.log('Falling back to in-memory storage');
+    store = getDefaultStore();
+    for (const cat of defaultCategories) {
+      store.categories.push({
+        id: store.nextId.categories++,
+        name: cat.name,
+        type: cat.type,
+        icon: cat.icon
+      });
+    }
+    store.close = function() {};
   }
 }
 
