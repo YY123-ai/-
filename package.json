@@ -1,48 +1,20 @@
 {
-  "name": "jzb-bookkeeping",
+  "name": "jzb-server",
   "version": "1.0.0",
-  "description": "记账本 - 多用户多账本桌面应用",
-  "main": "main.js",
+  "description": "记账本共享后端服务器",
+  "main": "index.js",
   "scripts": {
-    "start": "electron .",
-    "build": "electron-builder",
-    "pack": "electron-builder --dir"
-  },
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "electron": "^28.0.0",
-    "electron-builder": "^24.9.1"
+    "start": "node index.js"
   },
   "dependencies": {
     "archiver": "^6.0.2",
+    "axios": "^1.16.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "exceljs": "^4.4.0",
     "express": "^4.18.2",
+    "mongodb": "^6.0.0",
     "multer": "^1.4.5-lts.1",
     "tesseract.js": "^5.0.4"
-  },
-  "build": {
-    "appId": "com.jzb.bookkeeping",
-    "productName": "记账本",
-    "directories": {
-      "output": "dist"
-    },
-    "win": {
-      "target": "nsis"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true
-    },
-    "files": [
-      "main.js",
-      "preload.js",
-      "src/**/*",
-      "database/**/*",
-      "node_modules/**/*"
-    ]
   }
 }
