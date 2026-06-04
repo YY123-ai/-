@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>记账本</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 登录页 -->
+  <div id="loginPage" class="page">
+    <div class="login-container">
+      <div class="login-header">
+        <div class="login-icon">📒</div>
+        <h1>记账本</h1>
+        <p>轻松管理你的财务</p>
+      </div>
+      <div class="login-tabs">
+        <button class="login-tab active" data-tab="login">登录</button>
+        <button class="login-tab" data-tab="register">注册</button>
+      </div>
+      <form id="loginForm" class="login-form">
+        <div class="form-group">
+          <label>用户名</label>
+          <input type="text" id="loginUsername" placeholder="请输入用户名" required autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="loginPassword" placeholder="请输入密码" required>
+        </div>
+        <button type="submit" class="btn-primary">登录</button>
+      </form>
+      <form id="registerForm" class="login-form" style="display:none">
+        <div class="form-group">
+          <label>用户名</label>
+          <input type="text" id="regUsername" placeholder="请输入用户名" required autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="regPassword" placeholder="请输入密码（至少4位）" required minlength="4">
+        </div>
+        <div class="form-group">
+          <label>确认密码</label>
+          <input type="password" id="regPassword2" placeholder="再次输入密码" required>
+        </div>
+        <button type="submit" class="btn-primary">注册</button>
+      </form>
+      <div id="loginError" class="error-msg"></div>
+    </div>
+  </div>
+
+  <!-- 主页面容器 -->
+  <div id="mainPage" class="page main-container" style="display:none">
+    <!-- ===== Tab1: 账本页 ===== -->
+    <div id="tabBook" class="tab-page active">
+      <!-- 顶部区域 -->
+      <header class="book-header">
+        <div class="header-row">
+          <div class="header-left">
+            <select id="bookSelect" class="book-select"></select>
+            <button id="addBookBtn" class="btn-small" title="新建账本">+</button>
+            <button id="memberBtn" class="btn-small" title="成员管理">👥</button>
+            <button id="exportBtn" class="btn-small" title="导出账本">导出</button>
+          </div>
+          <div class="header-right">
+            <span id="currentUser" class="user-badge"></span>
+            <button id="logoutBtn" class="btn-small btn-logout">退出</button>
+          </div>
+        </div>
+        <!-- 时间维度切换 -->
+        <div class="period-tabs">
+          <button class="period-tab active" data-period="month">月</button>
+          <button class="period-tab" data-period="year">年</button>
+          <button class="period-tab" data-period="all">全部</button>
+        </div>
+        <div class="month-selector">
+          <button id="prevPeriod" class="btn-icon">&lt;</button>
+          <span id="currentPeriod"></span>
+          <button id="nextPeriod" class="btn-icon">&gt;</button>
+        </div>
+        <div class="summary">
+          <div class="summary-item income">
+            <span class="summary-label">收入</span>
+            <span class="summary-amount" id="totalIncome">+0.00</span>
+          </div>
+          <div class="summary-item expense">
+            <span class="summary-label">支出</span>
+            <span class="summary-amount" id="totalExpense">-0.00</span>
+          </div>
+          <div class="summary-item balance">
+            <span class="summary-label">结余</span>
+            <span class="summary-amount" id="totalBalance">0.00</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- 统计图表区域 -->
+      <section class="stats-section" id="statsSection" style="display:none">
+        <div class="section-header">
+          <h2>收支统计</h2>
+          <div class="stats-tabs">
+            <button class="stats-tab active" data-stats="expense">支出构成</button>
+            <button class="stats-tab" data-stats="income">收入构成</button>
+            <button class="stats-tab" data-stats="trend">收支趋势</button>
+          </div>
+        </div>
+        <div class="stats-chart" id="statsChart"></div>
+      </section>
+
+      <!-- 记录列表 -->
+      <section class="records-section">
+        <div class="section-header">
+          <h2>账单明细</h2>
+          <div class="filter-tabs">
+            <button class="filter-btn active" data-filter="all">全部</button>
+            <button class="filter-btn" data-filter="expense">支出</button>
+            <button class="filter-btn" data-filter="income">收入</button>
+          </div>
+        </div>
+        <div class="records-list" id="recordsList">
+          <div class="empty-state">暂无记录，快去记一笔吧</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== Tab2: 记账页 ===== -->
+    <div id="tabAdd" class="tab-page">
+      <div class="add-page-content">
+        <div class="add-hint">点击下方按钮记账</div>
+        <button class="big-add-btn" id="bigAddBtn">
+          <span class="add-icon">+</span>
+          <span class="add-text">记一笔</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== Tab3: 我的/总览页 ===== -->
+    <div id="tabProfile" class="tab-page">
+      <div class="profile-header">
+        <div class="profile-avatar" id="profileAvatar">A</div>
+        <div class="profile-info">
+          <div class="profile-name" id="profileName">用户名</div>
+          <div class="profile-role" id="profileRole">普通用户</div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <h3 class="profile-section-title">我的账本</h3>
+        <div class="books-grid" id="myBooksList">
+          <div class="empty-state">暂无账本</div>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <h3 class="profile-section-title">统计概览</h3>
+        <div class="overview-cards" id="overviewCards">
+          <div class="overview-card">
+            <div class="overview-value" id="ovTotalBooks">0</div>
+            <div class="overview-label">账本数</div>
+          </div>
+          <div class="overview-card">
+            <div class="overview-value" id="ovTotalRecords">0</div>
+            <div class="overview-label">记录数</div>
+          </div>
+          <div class="overview-card">
+            <div class="overview-value income-color" id="ovTotalIncome">+0.00</div>
+            <div class="overview-label">总收入</div>
+          </div>
+          <div class="overview-card">
+            <div class="overview-value expense-color" id="ovTotalExpense">-0.00</div>
+            <div class="overview-label">总支出</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="tabBook">
+        <span class="nav-icon">📒</span>
+        <span class="nav-text">账本</span>
+      </button>
+      <button class="nav-item nav-center" data-tab="tabAdd">
+        <span class="nav-icon nav-plus">+</span>
+        <span class="nav-text">记账</span>
+      </button>
+      <button class="nav-item" data-tab="tabProfile">
+        <span class="nav-icon">👤</span>
+        <span class="nav-text">我的</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- 记账弹窗（从Tab2的加号按钮弹出） -->
+  <div id="recordModal" class="modal" style="display:none">
+    <div class="modal-content record-modal-content">
+      <!-- 顶部：收支切换 + 关闭 -->
+      <div class="modal-top-bar">
+        <div class="type-toggle type-toggle-inline">
+          <button class="type-btn active" data-type="expense" id="btnExpense">支出</button>
+          <button class="type-btn" data-type="income" id="btnIncome">收入</button>
+        </div>
+        <div class="modal-top-right">
+          <span class="save-hint" id="saveHint"></span>
+          <button class="modal-close-btn" id="closeRecordModal">&times;</button>
+        </div>
+      </div>
+
+      <form id="recordForm" class="record-form">
+        <!-- 第1行：日期 + 金额 -->
+        <div class="form-row">
+          <div class="form-group date-group-full">
+            <label>日期</label>
+            <input type="date" id="date" required>
+          </div>
+          <div class="form-group amount-group-full">
+            <label>金额</label>
+            <div class="amount-input-wrap">
+              <span class="amount-prefix" id="amountPrefix">-</span>
+              <input type="number" id="amount" step="0.01" min="0.01" placeholder="0.00" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- 分类选择 -->
+        <div class="form-group">
+          <label>分类</label>
+          <div class="category-grid" id="categoryGrid"></div>
+        </div>
+
+        <!-- 备注 -->
+        <div class="form-group">
+          <label>备注</label>
+          <input type="text" id="note" placeholder="添加备注（可选）" maxlength="100">
+        </div>
+
+        <!-- 票据图片 + OCR识别 -->
+        <div class="form-group">
+          <label>票据凭证</label>
+          <div class="image-upload-area" id="imageUploadArea">
+            <div class="image-preview" id="imagePreview" style="display:none">
+              <img id="previewImg" src="" alt="预览">
+              <button type="button" class="image-remove" id="removeImage">&times;</button>
+            </div>
+            <div class="image-upload-buttons" id="imageButtons">
+              <button type="button" class="btn-upload" id="selectImageBtn">+ 添加图片</button>
+              <button type="button" class="btn-ocr" id="ocrBtn">OCR 自动识别</button>
+            </div>
+          </div>
+          <!-- OCR识别结果（自动填充后可编辑） -->
+          <div id="ocrResult" class="ocr-result" style="display:none">
+            <div class="ocr-header">识别结果（已自动填充，可手动修改）</div>
+            <div class="ocr-items" id="ocrItems"></div>
+            <div class="ocr-tip">如识别有误，可直接在上方表单中修改</div>
+          </div>
+        </div>
+
+        <input type="hidden" id="editRecordId" value="">
+        <button type="submit" class="btn-submit btn-save-record" id="btnSubmit">确定保存</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 编辑记录弹窗 -->
+  <div id="editModal" class="modal" style="display:none">
+    <div class="modal-content record-modal-content">
+      <div class="modal-header-bar">
+        <h3>编辑记录</h3>
+        <button class="modal-close-btn" id="closeEditModal">&times;</button>
+      </div>
+      <div class="type-toggle">
+        <button class="type-btn active" data-type="expense" id="editBtnExpense">支出</button>
+        <button class="type-btn" data-type="income" id="editBtnIncome">收入</button>
+      </div>
+      <form id="editForm" class="record-form">
+        <div class="form-row">
+          <div class="form-group amount-group">
+            <label>金额</label>
+            <input type="number" id="editAmount" step="0.01" min="0.01" placeholder="0.00" required>
+          </div>
+          <div class="form-group date-group">
+            <label>日期</label>
+            <input type="date" id="editDate" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>分类</label>
+          <div class="category-grid" id="editCategoryGrid"></div>
+        </div>
+        <div class="form-group">
+          <label>备注</label>
+          <input type="text" id="editNote" placeholder="添加备注（可选）" maxlength="100">
+        </div>
+        <input type="hidden" id="editRecordIdVal" value="">
+        <button type="submit" class="btn-submit" id="btnEditSubmit">保存修改</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 新建账本弹窗 -->
+  <div id="bookModal" class="modal" style="display:none">
+    <div class="modal-content">
+      <h3>新建账本</h3>
+      <div class="form-group">
+        <label>账本名称</label>
+        <input type="text" id="bookName" placeholder="例如：家庭账本" required>
+      </div>
+      <div class="form-group">
+        <label>图标</label>
+        <div class="icon-grid" id="iconGrid"></div>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-cancel" id="cancelBook">取消</button>
+        <button class="btn-primary" id="confirmBook">创建</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 成员管理弹窗 -->
+  <div id="memberModal" class="modal" style="display:none">
+    <div class="modal-content">
+      <h3>成员管理</h3>
+      <div id="memberList" class="member-list"></div>
+      <div class="invite-section">
+        <div class="form-group">
+          <label>邀请新成员</label>
+          <div class="invite-row">
+            <input type="text" id="inviteUsername" placeholder="输入用户名">
+            <select id="inviteRole" class="invite-role">
+              <option value="member">成员</option>
+              <option value="viewer">查看者</option>
+            </select>
+            <button class="btn-invite" id="inviteBtn">邀请</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-cancel" id="cancelMember">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 图片查看弹窗 -->
+  <div id="imageModal" class="modal" style="display:none">
+    <div class="modal-content image-modal-content">
+      <img id="modalImage" src="" alt="图片">
+      <button class="modal-close" id="closeImageModal">&times;</button>
+    </div>
+  </div>
+
+  <script src="js/renderer.js"></script>
+</body>
+</html>

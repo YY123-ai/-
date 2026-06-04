@@ -1,0 +1,71 @@
+# 依赖
+node_modules/
+
+# 便携版 Node.js
+node-runtime/
+
+# 构建输出
+dist/
+
+# Electron 运行时缓存
+data/Cache/
+data/Code Cache/
+data/DawnCache/
+data/GPUCache/
+data/Local Storage/
+data/Session Storage/
+data/Shared Dictionary/
+data/Network/
+data/Local State
+data/Preferences
+data/SharedStorage
+
+# 用户数据
+data/bookkeeping.json
+data/bookkeeping.db
+data/test.db
+data/images/
+
+# Tesseract 语言包（大文件）
+*.traineddata
+
+# 独立项目
+panda_office/
+
+# IDE
+.pai/
+.vscode/
+.trae/
+
+# 日志
+debug.log
+npm-log.txt
+server_error.txt
+server_output.txt
+temp_patch.txt
+
+# 调试/修复脚本（临时文件）
+auto_fix*.js
+check_*.js
+fix_*.js
+diag_*.js
+debug_*.js
+read*.js
+test_*.js
+gen_*.js
+rebuild_*.js
+restore_*.js
+safe_*.js
+complete_*.js
+deep_*.js
+final_*.js
+final_opt.js
+ascii_*.js
+bsearch_*.js
+line_*.js
+git_restore.js
+convert_push.js
+
+# 系统文件
+Thumbs.db
+.DS_Store

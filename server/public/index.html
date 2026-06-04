@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>记账本 - 下载安装</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif; background: #F5F6FA; min-height: 100vh; }
+    .container { max-width: 480px; margin: 0 auto; padding: 40px 24px; }
+    .header { text-align: center; margin-bottom: 32px; }
+    .logo { width: 80px; height: 80px; background: linear-gradient(135deg, #4F6EF7, #7C9AFF); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 16px; }
+    .title { font-size: 28px; font-weight: 700; color: #1D2129; }
+    .subtitle { font-size: 14px; color: #86909C; margin-top: 8px; }
+    .invite-card { background: #fff; border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .invite-label { font-size: 14px; color: #86909C; margin-bottom: 8px; }
+    .invite-code { font-size: 36px; font-weight: 700; color: #4F6EF7; letter-spacing: 6px; text-align: center; padding: 16px; background: #F5F6FA; border-radius: 12px; margin-bottom: 12px; }
+    .invite-info { font-size: 14px; color: #4E5969; text-align: center; }
+    .invite-info span { color: #4F6EF7; font-weight: 500; }
+    .download-section { margin-bottom: 24px; }
+    .download-btn { display: flex; align-items: center; justify-content: center; width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 500; border: none; cursor: pointer; text-decoration: none; margin-bottom: 12px; transition: all 0.2s; }
+    .download-btn:active { transform: scale(0.98); }
+    .btn-ios { background: #000; color: #fff; }
+    .btn-android { background: #3DDC84; color: #fff; }
+    .btn-desktop { background: #4F6EF7; color: #fff; }
+    .qr-section { text-align: center; background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .qr-title { font-size: 16px; font-weight: 500; color: #1D2129; margin-bottom: 16px; }
+    .qr-code { width: 200px; height: 200px; margin: 0 auto; background: #F5F6FA; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid #E5E6EB; }
+    .qr-hint { font-size: 12px; color: #86909C; margin-top: 12px; }
+    .features { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+    .feature { background: #fff; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    .feature-icon { font-size: 28px; margin-bottom: 8px; }
+    .feature-text { font-size: 13px; color: #4E5969; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">📒</div>
+      <div class="title">记账本</div>
+      <div class="subtitle">多人协作记账，数据实时同步</div>
+    </div>
+
+    <div class="invite-card" id="inviteCard" style="display:none;">
+      <div class="invite-label">邀请码</div>
+      <div class="invite-code" id="inviteCode"></div>
+      <div class="invite-info">邀请你加入账本「<span id="bookName"></span>」</div>
+      <div class="invite-info">权限：<span id="roleName"></span></div>
+    </div>
+
+    <div class="download-section">
+      <a class="download-btn btn-ios" href="javascript:void(0)" onclick="alert('请在 App Store 搜索「记账本」下载')">
+        🍎 iOS 下载
+      </a>
+      <a class="download-btn btn-android" href="javascript:void(0)" onclick="alert('请在应用市场搜索「记账本」下载')">
+        🤖 Android 下载
+      </a>
+      <a class="download-btn btn-desktop" href="javascript:void(0)" onclick="alert('桌面版请联系管理员获取安装包')">
+        💻 桌面版下载
+      </a>
+    </div>
+
+    <div class="qr-section">
+      <div class="qr-title">扫描二维码下载</div>
+      <div class="qr-code" id="qrCode">
+        <canvas id="qrCanvas"></canvas>
+      </div>
+      <div class="qr-hint">使用微信/浏览器扫一扫</div>
+    </div>
+
+    <div class="features">
+      <div class="feature"><div class="feature-icon">📊</div><div class="feature-text">收支统计</div></div>
+      <div class="feature"><div class="feature-icon">📷</div><div class="feature-text">OCR识别</div></div>
+      <div class="feature"><div class="feature-icon">👥</div><div class="feature-text">多人协作</div></div>
+      <div class="feature"><div class="feature-icon">📤</div><div class="feature-text">Excel导出</div></div>
+    </div>
+  </div>
+
+  <script>
+    // 解析URL中的邀请码参数
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+
+    if (code) {
+      document.getElementById('inviteCard').style.display = 'block';
+      document.getElementById('inviteCode').textContent = code;
+
+      // 获取邀请信息
+      fetch(`/api/invite/info?code=${code}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById('bookName').textContent = data.bookName;
+            const roleMap = { owner: '创建者', member: '可编辑/导出', viewer: '仅查看' };
+            document.getElementById('roleName').textContent = roleMap[data.role] || data.role;
+          }
+        })
+        .catch(() => {});
+    }
+
+    // 简易二维码生成（使用Canvas绘制）
+    function generateQR(text) {
+      const canvas = document.getElementById('qrCanvas');
+      const ctx = canvas.getContext('2d');
+      const size = 180;
+      canvas.width = size;
+      canvas.height = size;
+
+      // 简易二维码：使用方格矩阵模拟
+      // 实际项目中应使用 qrcode.js 库
+      const cellSize = 6;
+      const cols = Math.floor(size / cellSize);
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, size, size);
+
+      // 定位符（左上、右上、左下）
+      function drawFinder(x, y) {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(x * cellSize, y * cellSize, 7 * cellSize, 7 * cellSize);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect((x+1) * cellSize, (y+1) * cellSize, 5 * cellSize, 5 * cellSize);
+        ctx.fillStyle = '#000000';
+        ctx.fillRect((x+2) * cellSize, (y+2) * cellSize, 3 * cellSize, 3 * cellSize);
+      }
+
+      drawFinder(1, 1);
+      drawFinder(cols - 9, 1);
+      drawFinder(1, cols - 9);
+
+      // 数据区域（用文本hash模拟）
+      let hash = 0;
+      for (let i = 0; i < text.length; i++) {
+        hash = ((hash << 5) - hash) + text.charCodeAt(i);
+        hash |= 0;
+      }
+
+      ctx.fillStyle = '#000000';
+      for (let row = 10; row < cols - 10; row++) {
+        for (let col = 10; col < cols - 10; col++) {
+          const seed = hash * (row * cols + col);
+          if (Math.abs(seed) % 3 === 0) {
+            ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+          }
+        }
+      }
+
+      // 中间文字
+      ctx.fillStyle = '#4F6EF7';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('记账本', size/2, size/2);
+    }
+
+    // 生成当前页面URL的二维码
+    const currentUrl = window.location.origin + window.location.pathname + (code ? '?code=' + code : '');
+    generateQR(currentUrl);
+  </script>
+</body>
+</html>

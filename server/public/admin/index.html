@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>记账本 - 管理后台</title>
+<style>
+:root{--primary:#4F6EF7;--primary-light:#7C9AFF;--income:#00b42a;--expense:#f53f3f;--bg:#f0f2f5;--card:#fff;--text:#1d2129;--text2:#4e5969;--text3:#86909c;--border:#e5e6eb;--shadow:0 2px 12px rgba(0,0,0,0.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+a{color:var(--primary);text-decoration:none}
+
+/* 登录 */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1a2e,#16213e)}
+.login-box{width:380px;background:#fff;border-radius:16px;padding:40px 32px;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
+.login-title{text-align:center;margin-bottom:24px}
+.login-title h1{font-size:22px;color:var(--text)}
+.login-title p{font-size:13px;color:var(--text3);margin-top:4px}
+.login-input{width:100%;height:44px;border:1px solid var(--border);border-radius:8px;padding:0 14px;font-size:15px;outline:none;margin-bottom:12px}
+.login-input:focus{border-color:var(--primary)}
+.login-btn{width:100%;height:44px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;font-size:16px;font-weight:500;cursor:pointer}
+.login-btn:hover{opacity:.9}
+
+/* 布局 */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:#1a1a2e;color:#fff;padding:20px 0;position:fixed;top:0;left:0;bottom:0;overflow-y:auto}
+.sidebar-logo{padding:0 20px 24px;font-size:18px;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:12px}
+.sidebar-logo span{color:var(--primary-light)}
+.nav-item{display:flex;align-items:center;padding:12px 20px;color:rgba(255,255,255,0.65);cursor:pointer;transition:all .2s;border-left:3px solid transparent;font-size:14px}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,0.05)}
+.nav-item.active{color:#fff;background:rgba(79,110,247,0.15);border-left-color:var(--primary)}
+.nav-icon{margin-right:10px;font-size:16px;width:20px;text-align:center}
+.main{margin-left:220px;flex:1;padding:24px}
+.page-header{margin-bottom:24px}
+.page-header h2{font-size:20px;font-weight:600}
+
+/* 统计卡片 */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:12px;padding:20px;box-shadow:var(--shadow)}
+.stat-card-label{font-size:13px;color:var(--text3);margin-bottom:8px}
+.stat-card-value{font-size:28px;font-weight:700}
+.stat-card-sub{font-size:12px;color:var(--text3);margin-top:4px}
+.stat-income{color:var(--income)}
+.stat-expense{color:var(--expense)}
+.stat-primary{color:var(--primary)}
+
+/* 图表 */
+.chart-card{background:#fff;border-radius:12px;padding:20px;box-shadow:var(--shadow);margin-bottom:24px}
+.chart-title{font-size:15px;font-weight:600;margin-bottom:16px}
+.bar-chart{display:flex;align-items:flex-end;gap:12px;height:160px;padding-top:10px}
+.bar-group{flex:1;display:flex;flex-direction:column;align-items:center}
+.bar-wrap{display:flex;gap:4px;align-items:flex-end;height:120px}
+.bar{width:20px;border-radius:4px 4px 0 0;min-height:2px;transition:height .3s}
+.bar-income{background:var(--income)}
+.bar-expense{background:var(--expense)}
+.bar-label{font-size:11px;color:var(--text3);margin-top:6px}
+
+/* 表格 */
+.table-card{background:#fff;border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:24px}
+.table-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+.table-header h3{font-size:15px;font-weight:600}
+table{width:100%;border-collapse:collapse}
+th{background:#fafbfc;padding:12px 16px;text-align:left;font-size:13px;font-weight:500;color:var(--text2);border-bottom:1px solid var(--border)}
+td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px}
+tr:hover td{background:#f7f8fa}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:500}
+.badge-income{background:rgba(0,180,42,0.1);color:var(--income)}
+.badge-expense{background:rgba(245,63,63,0.1);color:var(--expense)}
+.badge-owner{background:rgba(79,110,247,0.1);color:var(--primary)}
+.badge-member{background:rgba(0,180,42,0.1);color:var(--income)}
+.badge-viewer{background:rgba(245,63,63,0.1);color:var(--expense)}
+.btn-sm{padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:#fff;font-size:12px;cursor:pointer;color:var(--text2)}
+.btn-sm:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{color:var(--expense);border-color:var(--expense)}
+.btn-danger:hover{background:var(--expense);color:#fff}
+.pagination{display:flex;justify-content:center;align-items:center;gap:8px;padding:16px}
+.page-btn{padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:13px}
+.page-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.page-btn:disabled{opacity:.5;cursor:not-allowed}
+.filter-bar{display:flex;gap:8px;align-items:center}
+.filter-select{height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:13px;outline:none}
+
+/* 空状态 */
+.empty{text-align:center;padding:48px;color:var(--text3)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="login-page" class="login-wrap">
+  <div class="login-box">
+    <div class="login-title"><h1>记账本 管理后台</h1><p>请输入管理员密码登录</p></div>
+    <input class="login-input" type="password" id="admin-pass" placeholder="管理员密码" onkeydown="if(event.key==='Enter')adminLogin()">
+    <button class="login-btn" onclick="adminLogin()">登 录</button>
+  </div>
+</div>
+
+<!-- 管理页面 -->
+<div id="admin-page" class="layout hidden">
+  <div class="sidebar">
+    <div class="sidebar-logo">📒 记账本 <span>Admin</span></div>
+    <div class="nav-item active" onclick="showSection('overview')" data-nav="overview"><span class="nav-icon">📊</span>系统概览</div>
+    <div class="nav-item" onclick="showSection('users')" data-nav="users"><span class="nav-icon">👥</span>用户管理</div>
+    <div class="nav-item" onclick="showSection('books')" data-nav="books"><span class="nav-icon">📒</span>账本管理</div>
+    <div class="nav-item" onclick="showSection('records')" data-nav="records"><span class="nav-icon">📋</span>记录管理</div>
+    <div class="nav-item" onclick="adminLogout()" style="margin-top:auto;position:absolute;bottom:20px;width:220px"><span class="nav-icon">🚪</span>退出登录</div>
+  </div>
+  <div class="main">
+    <!-- 概览 -->
+    <div id="sec-overview">
+      <div class="page-header"><h2>系统概览</h2></div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-card-label">用户总数</div><div class="stat-card-value stat-primary" id="ov-users">0</div></div>
+        <div class="stat-card"><div class="stat-card-label">账本总数</div><div class="stat-card-value stat-primary" id="ov-books">0</div></div>
+        <div class="stat-card"><div class="stat-card-label">记录总数</div><div class="stat-card-value stat-primary" id="ov-records">0</div></div>
+        <div class="stat-card"><div class="stat-card-label">今日记录</div><div class="stat-card-value stat-primary" id="ov-today-records">0</div></div>
+        <div class="stat-card"><div class="stat-card-label">总收入</div><div class="stat-card-value stat-income" id="ov-income">0</div></div>
+        <div class="stat-card"><div class="stat-card-label">总支出</div><div class="stat-card-value stat-expense" id="ov-expense">0</div></div>
+        <div class="stat-card"><div class="stat-card-label">总结余</div><div class="stat-card-value stat-primary" id="ov-balance">0</div></div>
+        <div class="stat-card"><div class="stat-card-label">邀请码数</div><div class="stat-card-value" id="ov-invites">0</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">近7天收支趋势</div>
+        <div class="bar-chart" id="chart-7days"></div>
+        <div style="display:flex;gap:24px;justify-content:center;margin-top:12px;font-size:12px;color:var(--text3)">
+          <span><span style="display:inline-block;width:12px;height:12px;background:var(--income);border-radius:2px;vertical-align:middle;margin-right:4px"></span>收入</span>
+          <span><span style="display:inline-block;width:12px;height:12px;background:var(--expense);border-radius:2px;vertical-align:middle;margin-right:4px"></span>支出</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 用户管理 -->
+    <div id="sec-users" class="hidden">
+      <div class="page-header"><h2>用户管理</h2></div>
+      <div class="table-card">
+        <div class="table-header"><h3>用户列表</h3><span id="user-count-label" style="font-size:13px;color:var(--text3)"></span></div>
+        <table><thead><tr><th>ID</th><th>用户名</th><th>记录数</th><th>账本数</th><th>所属账本</th><th>最后活跃</th><th>注册时间</th><th>操作</th></tr></thead>
+        <tbody id="user-table"></tbody></table>
+      </div>
+    </div>
+
+    <!-- 账本管理 -->
+    <div id="sec-books" class="hidden">
+      <div class="page-header"><h2>账本管理</h2></div>
+      <div class="table-card">
+        <div class="table-header"><h3>账本列表</h3></div>
+        <table><thead><tr><th>ID</th><th>名称</th><th>描述</th><th>创建者</th><th>成员数</th><th>记录数</th><th>收入</th><th>支出</th><th>结余</th><th>操作</th></tr></thead>
+        <tbody id="book-table"></tbody></table>
+      </div>
+    </div>
+
+    <!-- 记录管理 -->
+    <div id="sec-records" class="hidden">
+      <div class="page-header"><h2>记录管理</h2></div>
+      <div class="table-card">
+        <div class="table-header">
+          <h3>全部记录</h3>
+          <div class="filter-bar">
+            <select class="filter-select" id="filter-type" onchange="loadRecords()"><option value="">全部类型</option><option value="income">收入</option><option value="expense">支出</option></select>
+            <select class="filter-select" id="filter-book" onchange="loadRecords()"><option value="">全部账本</option></select>
+          </div>
+        </div>
+        <table><thead><tr><th>ID</th><th>日期</th><th>类型</th><th>分类</th><th>金额</th><th>备注</th><th>记录人</th><th>账本</th><th>图片</th><th>操作</th></tr></thead>
+        <tbody id="record-table"></tbody></table>
+        <div class="pagination" id="record-pagination"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = location.origin + '/api';
+let loggedIn = false;
+let recordPage = 1;
+
+let adminToken = '';
+
+async function api(path, data) {
+  const headers = data ? {'Content-Type':'application/json'} : {};
+  if (adminToken) headers['admin-token'] = adminToken;
+  const res = await fetch(API + path, {
+    method: data ? 'POST' : 'GET',
+    headers,
+    body: data ? JSON.stringify(data) : undefined
+  });
+  return res.json();
+}
+
+// 登录
+async function adminLogin() {
+  const pass = document.getElementById('admin-pass').value;
+  const res = await api('/admin/login', {password: pass});
+  if (res.success) {
+    adminToken = res.token;
+    loggedIn = true;
+    document.getElementById('login-page').classList.add('hidden');
+    document.getElementById('admin-page').classList.remove('hidden');
+    loadOverview();
+  } else {
+    alert(res.error || '登录失败');
+  }
+}
+
+function adminLogout() {
+  adminToken = '';
+  loggedIn = false;
+  document.getElementById('admin-page').classList.add('hidden');
+  document.getElementById('login-page').classList.remove('hidden');
+  document.getElementById('admin-pass').value = '';
+}
+
+// 切换导航
+function showSection(name) {
+  document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add('hidden'));
+  document.getElementById('sec-' + name).classList.remove('hidden');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`[data-nav="${name}"]`).classList.add('active');
+  if (name === 'overview') loadOverview();
+  if (name === 'users') loadUsers();
+  if (name === 'books') loadBooks();
+  if (name === 'records') { loadBookFilter(); loadRecords(); }
+}
+
+// 概览
+async function loadOverview() {
+  const d = await api('/admin/overview');
+  document.getElementById('ov-users').textContent = d.userCount;
+  document.getElementById('ov-books').textContent = d.bookCount;
+  document.getElementById('ov-records').textContent = d.recordCount;
+  document.getElementById('ov-today-records').textContent = d.todayRecordCount;
+  document.getElementById('ov-income').textContent = d.totalIncome.toFixed(2);
+  document.getElementById('ov-expense').textContent = d.totalExpense.toFixed(2);
+  document.getElementById('ov-balance').textContent = d.totalBalance.toFixed(2);
+  document.getElementById('ov-invites').textContent = d.inviteCount;
+  // 7天图表
+  const maxVal = Math.max(...d.last7Days.map(x => Math.max(x.income, x.expense)), 1);
+  let chartHtml = '';
+  d.last7Days.forEach(x => {
+    const iH = Math.max((x.income / maxVal) * 110, 2);
+    const eH = Math.max((x.expense / maxVal) * 110, 2);
+    const label = x.date.slice(5);
+    chartHtml += `<div class="bar-group"><div class="bar-wrap"><div class="bar bar-income" style="height:${iH}px" title="收入 ${x.income}"></div><div class="bar bar-expense" style="height:${eH}px" title="支出 ${x.expense}"></div></div><div class="bar-label">${label}</div></div>`;
+  });
+  document.getElementById('chart-7days').innerHTML = chartHtml;
+}
+
+// 用户
+async function loadUsers() {
+  const users = await api('/admin/users');
+  document.getElementById('user-count-label').textContent = `共 ${users.length} 个用户`;
+  let html = '';
+  users.forEach(u => {
+    html += `<tr><td>${u.id}</td><td><strong>${u.username}</strong></td><td>${u.recordCount}</td><td>${u.bookCount}</td><td>${u.books.join('、') || '-'}</td><td>${u.lastActive}</td><td>${u.createdAt || '-'}</td>
+    <td><button class="btn-sm btn-danger" onclick="deleteUser(${u.id},'${u.username}')">删除</button></td></tr>`;
+  });
+  document.getElementById('user-table').innerHTML = html || '<tr><td colspan="8" class="empty">暂无用户</td></tr>';
+}
+
+async function deleteUser(id, name) {
+  if (!confirm(`确定删除用户「${name}」？此操作将同时删除该用户的所有记录和成员关系！`)) return;
+  const res = await api('/admin/deleteUser', {userId: id});
+  if (res.success) { alert('删除成功'); loadUsers(); }
+  else alert(res.error || '删除失败');
+}
+
+// 账本
+async function loadBooks() {
+  const books = await api('/admin/books');
+  let html = '';
+  books.forEach(b => {
+    html += `<tr><td>${b.id}</td><td><strong>${b.name}</strong></td><td>${b.description}</td><td>${b.ownerName}</td><td>${b.memberCount}</td><td>${b.recordCount}</td>
+    <td style="color:var(--income)">+${b.income.toFixed(2)}</td><td style="color:var(--expense)">-${b.expense.toFixed(2)}</td><td style="color:var(--primary)">${b.balance.toFixed(2)}</td>
+    <td><button class="btn-sm btn-danger" onclick="deleteBook(${b.id},'${b.name}')">删除</button></td></tr>`;
+  });
+  document.getElementById('book-table').innerHTML = html || '<tr><td colspan="10" class="empty">暂无账本</td></tr>';
+}
+
+async function deleteBook(id, name) {
+  if (!confirm(`确定删除账本「${name}」？此操作将同时删除所有成员和记录！`)) return;
+  const res = await api('/admin/deleteBook', {bookId: id});
+  if (res.success) { alert('删除成功'); loadBooks(); }
+  else alert(res.error || '删除失败');
+}
+
+// 记录
+async function loadBookFilter() {
+  const books = await api('/admin/books');
+  let html = '<option value="">全部账本</option>';
+  books.forEach(b => { html += `<option value="${b.id}">${b.name}</option>`; });
+  document.getElementById('filter-book').innerHTML = html;
+}
+
+async function loadRecords() {
+  const type = document.getElementById('filter-type').value;
+  const bookId = document.getElementById('filter-book').value;
+  let url = `/admin/records?page=${recordPage}&pageSize=20`;
+  if (type) url += `&type=${type}`;
+  if (bookId) url += `&bookId=${bookId}`;
+  const d = await api(url);
+  let html = '';
+  d.list.forEach(r => {
+    const typeBadge = r.type === 'income' ? '<span class="badge badge-income">收入</span>' : '<span class="badge badge-expense">支出</span>';
+    const amtColor = r.type === 'income' ? 'var(--income)' : 'var(--expense)';
+    const amtPrefix = r.type === 'income' ? '+' : '-';
+    html += `<tr><td>${r.id}</td><td>${r.date}</td><td>${typeBadge}</td><td>${r.category}</td><td style="color:${amtColor};font-weight:600">${amtPrefix}${r.amount.toFixed(2)}</td><td>${r.note || '-'}</td><td>${r.username}</td><td>${r.bookName}</td><td>${r.hasImage ? '📷' : '-'}</td>
+    <td><button class="btn-sm btn-danger" onclick="deleteRecord(${r.id})">删除</button></td></tr>`;
+  });
+  document.getElementById('record-table').innerHTML = html || '<tr><td colspan="10" class="empty">暂无记录</td></tr>';
+  // 分页
+  const totalPages = Math.ceil(d.total / d.pageSize);
+  let pgHtml = `<button class="page-btn" ${recordPage<=1?'disabled':''} onclick="recordPage=1;loadRecords()">首页</button>`;
+  pgHtml += `<button class="page-btn" ${recordPage<=1?'disabled':''} onclick="recordPage--;loadRecords()">上一页</button>`;
+  pgHtml += `<span style="font-size:13px;color:var(--text3)">${recordPage} / ${totalPages || 1} (共${d.total}条)</span>`;
+  pgHtml += `<button class="page-btn" ${recordPage>=totalPages?'disabled':''} onclick="recordPage++;loadRecords()">下一页</button>`;
+  pgHtml += `<button class="page-btn" ${recordPage>=totalPages?'disabled':''} onclick="recordPage=${totalPages};loadRecords()">末页</button>`;
+  document.getElementById('record-pagination').innerHTML = pgHtml;
+}
+
+async function deleteRecord(id) {
+  if (!confirm('确定删除此记录？')) return;
+  const res = await api('/admin/deleteRecord', {recordId: id});
+  if (res.success) loadRecords();
+  else alert(res.error || '删除失败');
+}
+</script>
+</body>
+</html>
