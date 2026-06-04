@@ -1,8 +1,7 @@
-// 使用内存存储（演示用）
 let users = [];
 let userIdCounter = 1;
 
-export default function handler(req, res) {
+module.exports = function(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }

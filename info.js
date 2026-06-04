@@ -1,4 +1,4 @@
-export default function handler(req, res) {
+module.exports = function(req, res) {
   res.status(200).json({
     name: '记账本共享服务器',
     version: '1.0.0',

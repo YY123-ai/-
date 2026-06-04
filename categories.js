@@ -1,4 +1,4 @@
-export default function handler(req, res) {
+module.exports = function(req, res) {
   res.status(200).json([
     { id: 1, name: '餐饮', type: 'expense', icon: '🍜' },
     { id: 2, name: '交通', type: 'expense', icon: '🚗' },
